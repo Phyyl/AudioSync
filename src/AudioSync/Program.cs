@@ -1,14 +1,12 @@
 ﻿using AudioSync;
 using System.CommandLine;
-using System.Net;
-using System.Net.Sockets;
 
 Argument<string> hostArgument = new("host");
 Option<int> portOption = new("--port", () => 4411);
 
 Command hostCommand = new("host");
 hostCommand.Add(portOption);
-hostCommand.SetHandler(Host, portOption);
+hostCommand.SetHandler(HostAsync, portOption);
 
 Command connectCommand = new("connect");
 connectCommand.Add(hostArgument);
@@ -29,34 +27,11 @@ async Task ConnectAsync(string hostname, int port)
     }
 }
 
-void Host(int port)
+async Task HostAsync(int port)
 {
-    using WasapiLoopbackCapture capture = new(audioBufferMillisecondsLength: 25);
-    List<TcpClient> clients = new();
-    TcpListener listener = new(IPAddress.Any, port);
-
-    capture.DataAvailable += (sender, e) =>
+    if (AudioSyncServer.Start(new(port)) is AudioSyncServer server)
     {
-        foreach (var client in clients.ToArray())
-        {
-            try
-            {
-                client.GetStream().Write(e.Buffer, 0, e.BytesRecorded);
-            }
-            catch
-            {
-                clients.Remove(client);
-            }
-        }
-    };
-
-    capture.StartRecording();
-    listener.Start();
-
-    while (!Console.KeyAvailable)
-    {
-        TcpClient client = listener.AcceptTcpClient();
-        client.NoDelay = true;
-        clients.Add(client);
+        Console.ReadLine();
+        await server.StopAsync();
     }
 }

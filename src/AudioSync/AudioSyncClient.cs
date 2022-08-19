@@ -56,11 +56,15 @@ public class AudioSyncClient : IDisposable
 
     public async Task StopAsync()
     {
+        Dispose();
+
         await runningTask;
     }
 
     public void Dispose()
     {
+        cancellationTokenSource.Cancel();
+
         wasapiOut.Dispose();
         tcpClient.Dispose();
     }

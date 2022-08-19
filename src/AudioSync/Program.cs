@@ -1,60 +1,37 @@
-﻿using NAudio.CoreAudioApi;
-using NAudio.Wave;
+﻿using AudioSync;
 using System.CommandLine;
 using System.Net;
 using System.Net.Sockets;
 
 Argument<string> hostArgument = new("host");
-Option<int> bufferOption = new("--buffer");
 Option<int> portOption = new("--port", () => 4411);
 
 Command hostCommand = new("host");
 hostCommand.Add(portOption);
-hostCommand.Add(bufferOption);
-hostCommand.SetHandler(Host, portOption, bufferOption);
+hostCommand.SetHandler(Host, portOption);
 
 Command connectCommand = new("connect");
 connectCommand.Add(hostArgument);
 connectCommand.Add(portOption);
-connectCommand.Add(bufferOption);
-connectCommand.SetHandler(Connect, hostArgument, portOption, bufferOption);
+connectCommand.SetHandler(ConnectAsync, hostArgument, portOption);
 
 RootCommand rootCommand = new();
 rootCommand.Add(hostCommand);
 rootCommand.Add(connectCommand);
 rootCommand.Invoke(args);
 
-void Connect(string hostname, int port, int bufferMs)
+async Task ConnectAsync(string hostname, int port)
 {
-    using WasapiOut output = new(AudioClientShareMode.Shared, bufferMs);
-    BufferedWaveProvider provider = new(output.OutputWaveFormat);
-    using TcpClient client = new(hostname, port);
-    using Stream stream = client.GetStream();
-    byte[] buffer = new byte[1024 * 32];
-
-    client.NoDelay = true;
-
-    output.Init(provider);
-    output.Play();
-
-    while (!Console.KeyAvailable)
+    if (await AudioSyncClient.ConnectAsync(new(hostname, port)) is AudioSyncClient client)
     {
-        try
-        {
-            int read = stream.Read(buffer, 0, buffer.Length);
-            provider.AddSamples(buffer, 0, read);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex);
-            break;
-        }
+        Console.ReadLine();
+        await client.StopAsync();
     }
 }
 
-void Host(int port, int bufferMs)
+void Host(int port)
 {
-    using WasapiLoopbackCapture capture = new(audioBufferMillisecondsLength: bufferMs);
+    using WasapiLoopbackCapture capture = new(audioBufferMillisecondsLength: 25);
     List<TcpClient> clients = new();
     TcpListener listener = new(IPAddress.Any, port);
 

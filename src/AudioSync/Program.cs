@@ -26,10 +26,10 @@ rootCommand.Invoke(args);
 
 void Connect(string hostname, int port, int bufferMs)
 {
-    WasapiOut output = new(AudioClientShareMode.Shared, bufferMs);
+    using WasapiOut output = new(AudioClientShareMode.Shared, bufferMs);
     BufferedWaveProvider provider = new(output.OutputWaveFormat);
-    TcpClient client = new(hostname, port);
-    Stream stream = client.GetStream();
+    using TcpClient client = new(hostname, port);
+    using Stream stream = client.GetStream();
     byte[] buffer = new byte[1024 * 32];
 
     client.NoDelay = true;
@@ -54,7 +54,7 @@ void Connect(string hostname, int port, int bufferMs)
 
 void Host(int port, int bufferMs)
 {
-    WasapiLoopbackCapture capture = new(audioBufferMillisecondsLength: bufferMs);
+    using WasapiLoopbackCapture capture = new(audioBufferMillisecondsLength: bufferMs);
     List<TcpClient> clients = new();
     TcpListener listener = new(IPAddress.Any, port);
 

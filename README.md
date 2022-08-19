@@ -1,5 +1,7 @@
 # AudioSync
 
+Stream audio from a host to one or multiple clients.
+
 ## Installation
 
 1. Install the dotnet-sdk (6.0.x+)

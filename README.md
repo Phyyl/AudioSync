@@ -1,6 +1,6 @@
 # AudioSync
 
-[![Build Status](https://img.shields.io/github/workflow/status/phyyl/AudioSync/Build%20Pipeline)](https://github.com/Phyyl/AudioSync/actions/workflows/build.yml)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/phyyl/AudioSync/build.yml?branch=main)](https://github.com/Phyyl/AudioSync/actions/workflows/build.yml)
 [![NuGet Version](https://img.shields.io/nuget/v/AudioSync.svg?style=flat)](https://www.nuget.org/packages/AudioSync)
 
 Stream audio from a host to one or multiple clients. Can also be used as a library, see Examples section below.
